@@ -4,8 +4,8 @@ target/
 !**/src/test/**/target/
 .kotlin
 
-### Project ###
-./src/main/resources/application.properties
+### Properties ###
+application.properties
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Все объявления</title>
+    <link th:href="@{/css/main.css}" rel="stylesheet">
+</head>
+<body>
+<header th:replace="~{fragments/header :: header}"></header>
+
+<main class="container">
+    <h1>Все объявления</h1>
+
+    <div class="filters">
+        <form th:action="@{/search}" method="get">
+            <select name="category">
+                <option value="">Все категории</option>
+                <option th:each="cat : ${categories}"
+                        th:value="${cat.id}"
+                        th:text="${cat.name}">Категория
+                </option>
+            </select>
+            <button type="submit" class="btn btn-primary">Фильтр</button>
+        </form>
+    </div>
+
+    <div class="ads-grid">
+        <div th:each="ad : #{ads.content}" class="ad-card">
+            <a th:href="@{/ads/{id}(id=${ad.id})}">
+                <h3 th:text="@{ad.title}">Заголовок</h3>
+                <p class="price" th:text="${#number.formatDecimal(ad.price, 0, 'COMMA', 2, 'POINT')} + ' ₽'">Цена</p>
+                <p class="category" th:text="${ad.category.name}">Категория</p>
+                <p class="city" th:text="${ad.city.name}">Город</p>
+            </a>
+        </div>
+    </div>
+
+    <div class="pagination" th:if="${ads.totelPages > 1}">
+        <a th:if="${ads.hasPrevious()}"
+           th:href="@{/ads(page=@{ads.number - 1}})}"
+           class="btn"><<< Назад</a>
+        <span>Страница <span th:text="${ads.number + 1}">1</span> из <span th:text="${ads.totelPages}">1</span></span>
+        <a th:if="${ads.hasNext()}"
+           th:href="@{/ads(page=@{ads.number + 1}})}"
+           class="btn">Вперед >>></a>
+    </div>
+</main>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ads Board - Главная</title>
+    <link th:href="@{/css/main.css}" rel="stylesheet">
+</head>
+<body>
+<header th:replace="~{fragments/header :: header}"></header>
+
+<main class="conteiner">
+    <div class="hero-section">
+        <h1>Добро пожаловать на Ads Board</h1>
+        <form th:action="@{/search}" method="get" class="search-form">
+            <input type="text" name="q" placeholder="Поиск объявлений..." class="search-input">
+            <button type="submit" class="btn btn-primary">Найти</button>
+        </form>
+    </div>
+
+    <section class="categories-section">
+        <h2>Категории</h2>
+        <div class="categories-grid">
+            <div th:each="category : ${categories}" class="category-card">
+                <a th:href="@{/search(category=${category.id})}">
+                    <h3 th:text="${category.name}">Категория</h3>
+                </a>
+                </divth:each>
+            </div>
+    </section>
+
+    <section class="latest-ads">
+        <h2>Последние объявления</h2>
+        <div class="ads-grid">
+            <div th:each="ad : ${latestAds.content}" class="ad-card">
+                <a th:href="@{/ads/{id}(id=${ad.id})}">
+                    <h3 th:text="${ad.title}">Заголовок</h3>
+                    <p class="price" th:text="" ${#numbers.formatDecimal(ad.price, 0, 'COMMA', 2, 'POINT')} + '
+                    ₽'">Цена</p>
+                    <p class="city" th:text="${ad.city.name}">Город</p>
+                    <p class="date" th:text="${#temporals.format(ad.createdAt, 'dd.MM.yyyy')}">Дата</p>
+                </a>
+            </div>
+        </div>
+        <a th:href="@{/ads}" class="btn btn-secondary">Все объяявления</a>
+    </section>
+</main>
+
+<footer th:replace="fragments/footer :: footer"></footer>
+</body>
+</html>

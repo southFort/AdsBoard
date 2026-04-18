@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Header Fragment</title>
+</head>
+<body>
+<th:block th:fragment="header">
+    <header class="site-header">
+        <nav class="navbar">
+            <div class="container">
+                <a th:href="@{/}" class="navbar-brand">AdsBoard</a>
+                <ul class="navber-nav">
+                    <li><a th:href="@{/ads}">Объявления</a> </li>
+                    <li><a th:href="@{/categories}">Категории</a> </li>
+                    <li><a th:href="@{/login}">Вход</a> </li>
+                    <li><a th:href="@{/register}">Регистрация</a> </li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+</th:block>
+</body>
+</html>

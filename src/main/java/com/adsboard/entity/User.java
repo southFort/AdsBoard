@@ -32,7 +32,7 @@ public class User {
     private  String phone;
 
     @Column(name = "full_name", length = 100)
-    private  String fullname;
+    private  String fullName;
 
     @Column(name = "created_at")
     private LocalDateTime createAt;

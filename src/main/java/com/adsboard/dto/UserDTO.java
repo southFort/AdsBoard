@@ -13,7 +13,7 @@ public class UserDTO {
 
     @NotBlank(message = "Имя пользователя обязательно")
     @Size(min = 3, max = 50, message = "имя пользователя должно быть от 3 до 50 символов")
-    private String username;
+    private String userName;
 
     @NotBlank(message = "Email обязателен")
     @Email(message = "Некорректный email")

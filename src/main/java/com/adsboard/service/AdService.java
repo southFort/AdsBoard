@@ -16,6 +16,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.IOException;
 import java.nio.file.*;
 import java.util.List;
@@ -39,9 +40,9 @@ public class AdService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Ad> findUserAds(Long userId, int page,int size) {
+    public Page<Ad> findUserAds(Long userId, int page, int size) {
         return adRepository.findAllByUserId(userId,
-                PageRequest.of(page, size, Sort.by("createAd").descending()));
+                PageRequest.of(page, size, Sort.by("createdAt").descending()));
     }
 
     @Transactional(readOnly = true)
@@ -79,7 +80,7 @@ public class AdService {
         Ad ad = adRepository.findById(adId).orElseThrow();
 
         if (!ad.getUser().getId().equals(user.getId())) {
-            throw  new SecurityException("Нет прав на редактирование этого объявления");
+            throw new SecurityException("Нет прав на редактирование этого объявления");
         }
 
         ad.setTitle(adDTO.getTitle());
@@ -96,7 +97,7 @@ public class AdService {
         Ad ad = adRepository.findById(adId).orElseThrow();
 
         if (!ad.getUser().getId().equals(user.getId())) {
-            throw  new SecurityException("Нет прав на удаление этого объявления");
+            throw new SecurityException("Нет прав на удаление этого объявления");
         }
 
         adRepository.delete(ad);
@@ -109,11 +110,11 @@ public class AdService {
 
         if (searchDTO.getCategoryId() != null) {
             return adRepository.findByStatusAndCategory(1L, searchDTO.getCategoryId(),
-                    PageRequest.of(page, size,Sort.by("createAd").descending()));
+                    PageRequest.of(page, size, Sort.by("createdAt").descending()));
         }
 
         return adRepository.searchAds(1L, searchDTO.getSearchTerm(),
-                PageRequest.of(page, size,Sort.by("createAd").descending()));
+                PageRequest.of(page, size, Sort.by("createdAt").descending()));
     }
 
     private void saveAdImages(Ad ad, List<MultipartFile> files) throws IOException {

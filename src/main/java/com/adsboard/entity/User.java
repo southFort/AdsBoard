@@ -37,8 +37,9 @@ public class User {
     @Column(name = "created_at")
     private LocalDateTime createAt;
 
-    @Column(name = "is_enabled")
-    private Boolean isEnabled = true;
+    @Column(name = "is_enabled", nullable = false)
+    @Builder.Default
+    private boolean isEnabled = true;
 
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(

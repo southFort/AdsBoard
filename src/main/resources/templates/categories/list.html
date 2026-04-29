@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Все категории - Ads Board</title>
+    <link th:href="@{/css/main.css}" rel="stylesheet">
+</head>
+<body>
+<header th:replace="~{fragments/header :: header}"></header>
+
+<main class="container">
+    <div class="page-header">
+        <h2>Все категории</h2>
+        <p class="page-description">выберите категорию для просмотра объявлений</p>
+    </div>
+
+    <div class="categories-grid-main">
+        <div th:each="category : ${rootCategories}" class="category-card-main">
+            <a th:href="@{/categories/{id}(id=${category.id})}" class="category-link">
+                <div class="category-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span class="category-name" th:text="${category.name}">Название</span>
+                    <span class="ads-count" th:text="'(' + ${category.adsCount} + ')'">0</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div th:if="${#lists.isEmpty(rootCategories)}" class="empty-state">
+        <p>Катигории пока не добавлены</p>
+    </div>
+
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+</body>
+</html>

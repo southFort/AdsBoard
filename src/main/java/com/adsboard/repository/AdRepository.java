@@ -17,6 +17,15 @@ public interface AdRepository extends JpaRepository<Ad, Long> {
 
     Page<Ad> findAllByUserId(Long userId, Pageable pageable);
 
+    /**
+     * Для подсчета кол-ва объявлений
+     */
+    @Query("SELECT COUNT(a) FROM Ad a WHERE a.category.id = :categoryId")
+    long countByCategoryId(@Param("categoryId") Long categoryId);
+
+    @Query("SELECT a.category.id, COUNT(a.id) FROM Ad a GROUP BY a.category.id")
+    List<Object[]> countAdsGroupedByCategory();
+
     Page<Ad> findByCategoryId(Long categoryId, Pageable pageable);
 
     Page<Ad> findByCityId(Long cityId, Pageable pageable);

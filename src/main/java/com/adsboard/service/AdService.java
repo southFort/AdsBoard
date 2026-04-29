@@ -117,6 +117,12 @@ public class AdService {
                 PageRequest.of(page, size, Sort.by("createdAt").descending()));
     }
 
+    @Transactional(readOnly = true)
+    public Page<Ad> findByCategory(Long categoryId, int page, int size) {
+        return adRepository.findByStatusAndCategory(1L, categoryId,
+                PageRequest.of(page, size, Sort.by("createdAt").descending()));
+    }
+
     private void saveAdImages(Ad ad, List<MultipartFile> files) throws IOException {
         Path uploadPath = Paths.get(UPLOAD_DIR);
         if (!Files.exists(uploadPath)) {

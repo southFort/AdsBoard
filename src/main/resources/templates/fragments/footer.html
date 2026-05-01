@@ -1,11 +1,13 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spriing-security">
+
 <body>
 <th:block th:fragment="footer">
     <footer class="site-footer">
         <div class="container">
             <div class="footer-content">
-                <div class="cooter-section">
+                <div class="cooter-section footer-brand">
                     <h4>AdsBoard</h4>
                     <p>Доска объявлений для ваших товаров и услуг</p>
                 </div>
@@ -13,10 +15,10 @@
                 <div class="footer-section">
                     <h4>Навигация</h4>
                     <ul class="footer-links">
-                        <li><a th:href="@{/}">Главная</a> </li>
-                        <li><a th:href="@{/ads}">Объявления</a> </li>
-                        <li><a th:href="@{/categories}">Категории</a> </li>
-                        <li><a th:href="@{/cities}">Города</a> </li>
+                        <li><a th:href="@{/}">Главная</a></li>
+                        <li><a th:href="@{/ads}">Объявления</a></li>
+                        <li><a th:href="@{/categories}">Категории</a></li>
+                        <li><a th:href="@{/cities}">Города</a></li>
                     </ul>
                 </div>
 
@@ -37,14 +39,15 @@
                         </li>
                     </ul>
                 </div>
+            </div>
 
-                <div class="footer-bootom">
-                    <p>&copy; <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2026</span> AdsBoard. Все права защищены. </p>
-                    <ul class="footer-legal">
-                        <li><a th:href="@{/privacy}">Политика конфиденциальности</a></li>
-                        <li><a th:href="@{/terms}">Условия использования</a></li>
-                    </ul>
-                </div>
+            <div class="footer-bottom">
+                <p>&copy; <span th:text="${#temporals.format(#temporals.createNow(), 'yyyy')}">2026</span> AdsBoard. Все
+                    права защищены. </p>
+                <ul class="footer-legal">
+                    <li><a th:href="@{/privacy}">Политика конфиденциальности</a></li>
+                    <li><a th:href="@{/terms}">Условия использования</a></li>
+                </ul>
             </div>
         </div>
     </footer>

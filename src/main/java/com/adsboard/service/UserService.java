@@ -21,7 +21,7 @@ public class UserService {
 
     @Transactional
     public User createUser (User user, Set<String> roleNames) {
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        //user.setPassword(passwordEncoder.encode(user.getPassword()));
 
         Set<Role> roles = roleRepository.findByNameIn(roleNames);
         user.setRoles(roles);

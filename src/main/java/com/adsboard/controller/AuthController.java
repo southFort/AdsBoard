@@ -6,6 +6,7 @@ import com.adsboard.dto.UserDTO;
 import com.adsboard.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -19,6 +20,7 @@ import java.util.Set;
 public class AuthController {
 
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
     private static final Logger logger = (Logger) LoggerFactory.getLogger(AuthController.class);
 
     @GetMapping("/login")
@@ -60,10 +62,12 @@ public class AuthController {
         }
 
         try {
+            String encodedPassword = passwordEncoder.encode(userDTO.getPassword());
+
             User user = User.builder()
                     .username(userDTO.getUserName())
                     .email(userDTO.getEmail())
-                    .password(userDTO.getPassword())
+                    .password(encodedPassword)
                     .phone(userDTO.getPhone())
                     .fullName(userDTO.getFullName())
                     .build();

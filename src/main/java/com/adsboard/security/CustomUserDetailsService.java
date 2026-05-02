@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 import java.util.stream.Collectors;
 
 /**
- * Логин пользователя. Если isEnable = NULL считаем чтопользователь отключен
+ * Логин пользователя. Если isEnable = NULL считаем что пользователь отключен
  */
 
 @Service
@@ -25,6 +25,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userService.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("пользователь не найден: " + username));
+
+        System.out.println("Загружен пользователь: " + user.getUsername());
+        System.out.println("Хранимый пароль: " + user.getPassword());
+        System.out.println("Пароль закодировал? " + user.getPassword().startsWith("$2a$"));
 
         boolean enabled = Boolean.TRUE.equals(user.isEnabled());
 

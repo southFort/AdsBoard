@@ -25,8 +25,8 @@
                 <a th:href="@{/search(category=${category.id})}">
                     <h3 th:text="${category.name}">Категория</h3>
                 </a>
-                </divth:each>
             </div>
+        </div>
     </section>
 
     <section class="latest-ads">
@@ -35,8 +35,7 @@
             <div th:each="ad : ${latestAds.content}" class="ad-card">
                 <a th:href="@{/ads/{id}(id=${ad.id})}">
                     <h3 th:text="${ad.title}">Заголовок</h3>
-                    <p class="price" th:text="" ${#numbers.formatDecimal(ad.price, 0, 'COMMA', 2, 'POINT')} + '
-                    ₽'">Цена</p>
+                    <p class="price" th:text="${#numbers.formatDecimal(ad.price, 0, 'COMMA', 2, 'POINT')} + ' ₽'">Цена</p>
                     <p class="city" th:text="${ad.city.name}">Город</p>
                     <p class="date" th:text="${#temporals.format(ad.createdAt, 'dd.MM.yyyy')}">Дата</p>
                 </a>
@@ -46,6 +45,6 @@
     </section>
 </main>
 
-<footer th:replace="fragments/footer :: footer"></footer>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
 </body>
 </html>

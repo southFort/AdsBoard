@@ -14,7 +14,7 @@ public class HomeController {
     private final AdService adService;
     private final CategoryService categoryService;
 
-    @GetMapping
+    @GetMapping("/")
     public String home(Model model) {
         model.addAttribute("latestAds", adService.findAllPublicAds(0, 8));
         model.addAttribute("categories", categoryService.getRootCategories());

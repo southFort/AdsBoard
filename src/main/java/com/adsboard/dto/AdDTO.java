@@ -29,7 +29,7 @@ public class AdDTO {
     private Long categoryId;
 
     @NotNull(message = "Город обязателен")
-    private long cityId;
+    private Long cityId;
 
     private Long statusId;
 

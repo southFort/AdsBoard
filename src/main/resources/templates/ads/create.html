@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Содать объявление - AdsBoard</title>
+    <link th:href="@{/css/main.css}" rel="stylesheet">
+    <link th:href="@{/css/add-ad.css}" rel="stylesheet">
+</head>
+<body>
+<header th:replace="~{fragments/header :: header}"></header>
+<main class="container create-ad-container">
+    <div class="page-header">
+        <h2>Новое объявление</h2>
+    </div>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <form th:action="@{/ads/create}" th:object="${adDTO}" method="post">
+        <div class="form-section">
+            <h2 class="form-section-title">
+                <span class="step-number">1</span>
+                Основная информация
+            </h2>
+
+            <div class="form-row single">
+                <div class="form-group">
+                    <label for="title">Заголовок объявления *</label>
+                    <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            th:field="*{title}"
+                            placeholder="Например: Продам автомобиль toyota Camry"
+                            required
+                            maxlength="200"
+                    />
+                    <small>Придумайте краткий заголовок</small>
+                    <span th:if="${#fields.hasErrors('title')}"
+                          th:errors="*{title}"
+                          class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="form-row single">
+                <div class="form-group">
+                    <label for="description">Описание *</label>
+                    <textarea
+                            type="text"
+                            id="description"
+                            name="description"
+                            th:field="*{description}"
+                            placeholder="основной текст объявления"
+                            required
+                            minlength="10"
+                    ></textarea>
+                    <small>Основной текст объявления</small>
+                    <span th:if="${#fields.hasErrors('description')}"
+                          th:errors="*{description}"
+                          class="field-error"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-section-title">
+                <span class="step-number">2</span>
+                Цена и категория
+            </h2>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="price">Цена</label>
+                    <input
+                            type="number"
+                            id="price"
+                            name="price"
+                            th:field="*{price}"
+                            placeholder="0.0"
+                            required
+                            min="0.1"
+                            step="0.1">
+                    <small>Укажите стоимость</small>
+                    <span th:if="${#fields.hasErrors('price')}"
+                          th:errors="*{price}"
+                          class="field-error"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="categoryId">Категория</label>
+                    <select
+                            id="categoryId"
+                            name="categoryId"
+                            th:field="*{categoryId}"
+                            required
+                    >
+                        <option value="">Выберите категорию</option>
+                        <option th:each="category : ${categories}"
+                                th:value="${category.id}"
+                                th:text="${category.name}">Категория
+                        </option>
+                    </select>
+                    <small>Выберите категорию</small>
+                    <span th:if="${#fields.hasErrors('categoryId')}"
+                          th:errors="*{categoryId}"
+                          class="field-error"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-section-title">
+                <span class="step-number">3</span>
+                Местоположение
+            </h2>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="regionId">Регион</label>
+                    <select
+                            id="regionId"
+                            name="regionId"
+                            onchange="loadCitiesByRegion()"
+                    >
+                        <option value="">Выберите регион</option>
+                        <option th:each="region : ${regions}"
+                                th:value="${region.id}"
+                                th:text="${region.name}">Регион
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="cityId">Город</label>
+                    <select
+                            id="cityId"
+                            name="cityId"
+                            th:field="*{cityId}"
+                            required
+                    >
+                        <option value="">Сначала выберите регион</option>
+                    </select>
+                    <span th:if="${#fields.hasErrors('cityId')}"
+                          th:errors="*{cityId}"
+                          class="field-error"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2 class="form-section-title">
+                <span class="step-number">4</span>
+                Фотографии
+            </h2>
+
+            <div class="form-group">
+                <label>Фотографии</label>
+                <small>Максимум 10 фотографий</small>
+
+                <div class="image-upload-area" id="imageUploadArea">
+                    <div class="image-upload-icon">📷</div>
+                    <div class="image-upload-text">
+                        <strong>Претащите фото сюда</strong> или нажмите для выбора
+                    </div>
+                    <div class="image-upload-hint">
+                        Поддерживаются: JPG, PNG, GIF ( макс. 5Mb каждое)
+                    </div>
+                </div>
+
+                <input
+                        type="file"
+                        id="images"
+                        name="images"
+                        multiple
+                        accept="image/jpeg,image/png,image/gif"
+                        onchange="handleFileSelect(event)"
+                >
+
+                <div class="image-preview-container" id="imagePreviewContainer"></div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <a th:href="@{/my-ads}" class="btn btn-secondary">Отмена</a>
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+                Опубликовать объявление
+            </button>
+        </div>
+    </form>
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<script>
+    //===Загрузка изображений===
+    let selectedFiles = [];
+
+    const uploadArea = document.getElementById('imageUploadArea');
+    const fileInput = document.getElementById('images');
+    const previewContainer = document.getElementById('imagePreviewContainer');
+
+    //Клик по области загрузки
+    uploadArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    //Drag & Drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover')
+    });
+
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+    });
+
+    //Выбор файлов
+    function handleFileSelect(event) {
+        handleFiles(event.target.files);
+    }
+
+    function handleFiles(files) {
+        const maxFiles = 10;
+        const maxSize = 5 * 1024 * 1024;    //5Mb
+
+        if (selectedFiles.length + files.length > maxFiles) {
+            alert('Максимум ' + maxFiles + ' фотографий')
+        }
+
+        for (let file of files) {
+            if (file.size > maxSize) {
+                alert('Файл ' + file.name + ' слишком большой (макс. 5Mb');
+                continue;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert('Файл ' + file.name + ' не является изображением');
+                continue;
+            }
+
+            selectedFiles.push(file);
+            addImagePreview(file);
+        }
+
+        updateFileInput();
+    }
+
+    function addImagePreview(file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const index = selectedFiles.length - 1;
+            const previewItem = document.createElement('div');
+            previewItem.className = 'image-preview-item';
+            previewItem.innerHTML = `
+                <img src="${e.target.result}" alt="Preview">
+                <button type="button" class="remove-btn" onclick="removeImage(${index})">X</button>
+                ${index === 0 ? '<span class="main-badge">Главная</span>' : '<button type="button" class="set-main-btn" onclick="setMainImage(' + index + ')">Главная</button>'}
+            `;
+            previewContainer.appendChild(previewItem);
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeImage(index) {
+        selectedFiles.splice(index, 1);
+        refreshPreviews();
+        updateFileInput();
+    }
+
+    function setMainImage(index) {
+        if (index === 0) return;
+
+        const temp = selectedFiles[0];
+        selectedFiles[0] = selectedFiles[index];
+        selectedFiles[index] = temp;
+
+        refreshPreviews();
+        updateFileInput();
+    }
+
+    function refreshPreviews() {
+        previewContainer.innerHTML = '';
+        selectedFiles.forEach((file, index) => {
+            addImagePreview(file);
+        });
+    }
+
+    function updateFileInput() {
+        const dataTransfer = new DataTransfer();
+        selectedFiles.forEach(file => dataTransfer.items.add(file));
+        fileInput.files = dataTransfer.files;
+    }
+
+    //===Загрузка городов по региону===
+    function loadCitiesByRegion() {
+        const regionId = document.getElementById('regionId').value;
+        const citySelect = document.getElementById('cityId');
+
+        if (!regionId) {
+            citySelect.innerHTML = '<option value="">Сначала выберите регион</option>';
+            return;
+        }
+
+        //AJAX запрос к серверу
+        fetch('/api/cities/by-region/' + regionId)
+            .then(response => response.json())
+            .then(cities => {
+                citySelect.innerHTML = '<option value="">Выберите город</option>';
+                cities.forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city.id;
+                    option.textContent = city.name;
+                    citySelect.appendChild(option);
+                });
+            })
+            .catch(error => {
+                console.error('Ошибка загрузки городов:', error);
+                citySelect.innerHTML = '<option value="">Ошибка загрузки</option>'
+            });
+    }
+
+    //===Валидация формы перед отправкой===
+
+</script>
+</body>
+</html>

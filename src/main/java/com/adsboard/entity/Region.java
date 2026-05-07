@@ -2,6 +2,8 @@ package com.adsboard.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @Table(name = "regions")
@@ -18,4 +20,8 @@ public class Region {
 
     @Column(nullable = false, length = 100)
     private String name;
+
+    @OneToMany(mappedBy = "region", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private Set<City> cities = new HashSet<>();
 }

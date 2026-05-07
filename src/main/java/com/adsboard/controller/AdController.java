@@ -3,10 +3,7 @@ package com.adsboard.controller;
 import com.adsboard.dto.AdDTO;
 import com.adsboard.entity.Ad;
 import com.adsboard.entity.User;
-import com.adsboard.service.AdService;
-import com.adsboard.service.CategoryService;
-import com.adsboard.service.CityService;
-import com.adsboard.service.UserService;
+import com.adsboard.service.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -24,10 +21,11 @@ import java.util.List;
 @Controller
 @RequestMapping("/ads")
 @RequiredArgsConstructor
-public class AdControler {
+public class AdController {
 
     private final AdService adService;
     private final CategoryService categoryService;
+    private final RegionService regionService;
     private final CityService cityService;
     private final UserService userService;
 
@@ -51,8 +49,8 @@ public class AdControler {
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("adDTO", new AdDTO());
-        model.addAttribute("categories", categoryService.getAllCategories());
-        model.addAttribute("citias", cityService.getAllCities());
+        model.addAttribute("categories", categoryService.getAllCategoriesDTO());
+        model.addAttribute("regions", regionService.getAllRegions());
         return "ads/create";
     }
 
@@ -65,7 +63,7 @@ public class AdControler {
                            Model model) {
         if (bindingResult.hasErrors()) {
             model.addAttribute("categories", categoryService.getAllCategories());
-            model.addAttribute("cities", cityService.getAllCities());
+            model.addAttribute("regions", regionService.getAllRegions());
             return "ads/create";
         }
 
@@ -74,7 +72,7 @@ public class AdControler {
             User user = userService.findByUsername(userDetails.getUsername()).orElseThrow();
             adService.creareAd(adDTO, user, images);
             redirectAttributes.addFlashAttribute("success", "Объявление успешно создано!");
-            return "redirect:/my_ads";
+            return "redirect:/my-ads";
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Ошибка при создании объявления: " + e.getMessage());
             return "redirect:/ads/create";

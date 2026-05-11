@@ -6,9 +6,7 @@ import com.adsboard.entity.User;
 import com.adsboard.dto.AdDTO;
 import com.adsboard.dto.SearchDTO;
 import com.adsboard.repository.AdRepository;
-import com.adsboard.repository.AdStatusRepository;
 import com.adsboard.repository.CategoryRepository;
-import com.adsboard.repository.CityRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,9 +27,9 @@ import java.util.UUID;
 public class AdService {
 
     private final AdRepository adRepository;
-    private final AdStatusRepository adStatusRepository;
+    private final AdStatusService adStatusService;
     private final CategoryRepository categoryRepository;
-    private final CityRepository cityRepository;
+    private final CityService cityService;
 
     private static final String UPLOAD_DIR = "uploads/ads/";
 
@@ -56,19 +56,20 @@ public class AdService {
     }
 
     @Transactional
-    public Ad creareAd(AdDTO adDTO, User user, List<MultipartFile> images) throws IOException {
+    public Ad createAd(AdDTO adDTO, User user, List<MultipartFile> images) throws IOException {
         Ad ad = new Ad();
         ad.setTitle(adDTO.getTitle());
         ad.setDescription(adDTO.getDescription());
         ad.setPrice(adDTO.getPrice());
         ad.setUser(user);
         ad.setCategory(categoryRepository.findById(adDTO.getCategoryId()).orElseThrow());
-        ad.setCity(cityRepository.findById(adDTO.getCityId()).orElseThrow());
-        ad.setStatus(adStatusRepository.findById(1L).orElseThrow());
+        ad.setCity(cityService.findById(adDTO.getCityId()));
+        ad.setStatus(adStatusService.findById(11L));
 
         Ad saveAd = adRepository.save(ad);
 
         if (images != null && !images.isEmpty()) {
+            System.out.println("Saving " + images.size() + " images...");
             saveAdImages(saveAd, images);
         }
 
@@ -87,7 +88,7 @@ public class AdService {
         ad.setDescription(adDTO.getDescription());
         ad.setPrice(adDTO.getPrice());
         ad.setCategory(categoryRepository.findById(adDTO.getCategoryId()).orElseThrow());
-        ad.setCity(cityRepository.findById(adDTO.getCityId()).orElseThrow());
+        ad.setCity(cityService.findById(adDTO.getCityId()));
 
         return adRepository.save(ad);
     }
@@ -144,9 +145,10 @@ public class AdService {
             adImage.setFileSize(file.getSize());
             adImage.setMimeType(file.getContentType());
             adImage.setDisplayOrder(order++);
-            adImage.setIsMain(order == 1);
+            adImage.setIsMain(order == 0);
 
             ad.getImages().add(adImage);
+            order++;
         }
     }
 }

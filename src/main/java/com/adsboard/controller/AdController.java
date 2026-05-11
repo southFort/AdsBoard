@@ -54,6 +54,16 @@ public class AdController {
         return "ads/create";
     }
 
+    /**
+     * Создание объявления, отправка запроса
+     * @param adDTO
+     * @param bindingResult
+     * @param images
+     * @param userDetails
+     * @param redirectAttributes
+     * @param model
+     * @return
+     */
     @PostMapping("/create")
     public String createAd(@Valid @ModelAttribute AdDTO adDTO,
                            BindingResult bindingResult,
@@ -61,19 +71,42 @@ public class AdController {
                            @AuthenticationPrincipal UserDetails userDetails,
                            RedirectAttributes redirectAttributes,
                            Model model) {
+
+        //Логируем полученные данные - временно пока дебажим
+        System.out.println("===START createAd===");
+        System.out.println("Username: " + (userDetails != null ? userDetails.getUsername() : "null"));
+        System.out.println("Title: " + adDTO.getTitle());
+        System.out.println("Category ID: " + adDTO.getCategoryId());
+        System.out.println("City ID type: " + adDTO.getCityId().getClass().getName());
+        System.out.println("City ID: " + adDTO.getCityId());
+        System.out.println("Images count: " + (images != null ? images.size() : 0));
+
+        if (adDTO.getCityId() == null) {
+            bindingResult.rejectValue("cityId", "error.cityId", "Выберите город");
+        }
+
         if (bindingResult.hasErrors()) {
-            model.addAttribute("categories", categoryService.getAllCategories());
+            System.out.println("BindingResult has errors!");
+            model.addAttribute("categories", categoryService.getAllCategoriesDTO());
             model.addAttribute("regions", regionService.getAllRegions());
             return "ads/create";
         }
 
         try {
             //Получаем пользователя из сервиса
-            User user = userService.findByUsername(userDetails.getUsername()).orElseThrow();
-            adService.creareAd(adDTO, user, images);
+            User user = userService.findByUsername(userDetails.getUsername())
+                    .orElseThrow(() -> new RuntimeException("Пользователь не найден: " + userDetails.getUsername()));
+
+            System.out.println("User found: " + user.getUsername() + ", ID: " + user.getId());
+
+            adService.createAd(adDTO, user, images);
+
             redirectAttributes.addFlashAttribute("success", "Объявление успешно создано!");
             return "redirect:/my-ads";
         } catch (Exception e) {
+            System.out.println("ERROR in creareAd: " + e.getMessage());
+            e.printStackTrace();
+
             redirectAttributes.addFlashAttribute("error", "Ошибка при создании объявления: " + e.getMessage());
             return "redirect:/ads/create";
         }

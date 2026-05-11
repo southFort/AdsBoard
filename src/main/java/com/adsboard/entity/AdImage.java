@@ -1,7 +1,11 @@
 package com.adsboard.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Entity
@@ -45,5 +49,18 @@ public class AdImage {
     @PrePersist
     protected void onCreate() {
         uploadedAt = LocalDateTime.now();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AdImage)) return false;
+        AdImage adImage = (AdImage) o;
+        return id != null && id.equals(adImage.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
     }
 }

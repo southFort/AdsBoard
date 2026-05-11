@@ -18,7 +18,7 @@
     <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
     <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
-    <form th:action="@{/ads/create}" th:object="${adDTO}" method="post">
+    <form th:action="@{/ads/create}" th:object="${adDTO}" method="post" enctype="multipart/form-data">
         <div class="form-section">
             <h2 class="form-section-title">
                 <span class="step-number">1</span>
@@ -302,6 +302,8 @@
         const regionId = document.getElementById('regionId').value;
         const citySelect = document.getElementById('cityId');
 
+        console.log('Region selected: ', regionId);
+
         if (!regionId) {
             citySelect.innerHTML = '<option value="">Сначала выберите регион</option>';
             return;
@@ -311,6 +313,7 @@
         fetch('/api/cities/by-region/' + regionId)
             .then(response => response.json())
             .then(cities => {
+                console.log('Cities loaded: ', cities);
                 citySelect.innerHTML = '<option value="">Выберите город</option>';
                 cities.forEach(city => {
                     const option = document.createElement('option');

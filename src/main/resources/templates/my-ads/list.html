@@ -32,10 +32,10 @@
         <tbody>
         <tr th:each="ad : ${ads.content}">
             <td th:text="${ad.title}">Заголовок</td>
-            <td th:text="${#number.formatDecimal(ad.price, 0, 'COMMA', 2, 'POINT')} + ' ₽'">Цена</td>
+            <td th:text="${#numbers.formatDecimal(ad.price, 0, 'COMMA', 2, 'POINT')} + ' ₽'">Цена</td>
             <td th:text="${ad.category.name}">Категория</td>
             <td th:text="${ad.status.name}">Статус</td>
-            <td th:text="${ad.viewsCount}">0</td>
+            <td th:text="${ad.viewCount}">0</td>
             <td th:text="${#temporals.format(ad.createdAt, 'dd.MM.yyyy')}">Дата</td>
             <td>
                 <a th:href="@{/ads/edit/{id}(id=${ad.id})}" class="btn btn-sm">Редактировать</a>
@@ -50,11 +50,11 @@
 
     <div class="pagination" th:if="${ads.totalPages > 1}">
         <a th:if="${ads.hasPrevious()}"
-           th:href="@{/my-ads(page=@{ads.number - 1}})}"
+           th:href="@{/my-ads(page=@{ads.number - 1})}"
            class="btn"><<< Назад</a>
-        <span>Страница <span th:text="${ads.number + 1}">1</span> из <span th:text="${ads.totelPages}">1</span></span>
+        <span>Страница <span th:text="${ads.number + 1}">1</span> из <span th:text="${ads.totalPages}">1</span></span>
         <a th:if="${ads.hasNext()}"
-           th:href="@{/my-ads(page=@{ads.number + 1}})}"
+           th:href="@{/my-ads(page=@{ads.number + 1})}"
            class="btn">Вперед >>></a>
     </div>
 

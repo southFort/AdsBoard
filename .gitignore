@@ -8,7 +8,7 @@ target/
 application.properties
 
 ### uploads ###
-"uploads/"
+uploads/
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

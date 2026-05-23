@@ -8,6 +8,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+/**
+ * Сервис для управления регионами.
+ * Предоставляет бизнес-логику для получения информации о регионах
+ * Регионы используются для группировки городов и
+ * фильтрации объявлений по географическому признаку.
+ */
 @Service
 @RequiredArgsConstructor
 public class RegionService {
@@ -15,8 +21,7 @@ public class RegionService {
     private final RegionRepository regionRepository;
 
     /**
-     * Получить все регионы
-     * @return список всех регионов
+     * Получает список всех регионов
      */
     @Transactional(readOnly = true)
     public List<Region> getAllRegions(){

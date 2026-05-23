@@ -12,6 +12,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Контроллер личного кабинета пользователя.
+ * Обрабатывает запросы, связанные с отображением и управлением
+ * объявлениями текущего пользователя.
+ * Основные маршруты
+ * - GET /my-ads - список всех объявлений пользователя
+ * Доступен только аутентифицированным пользователям.
+ */
 @Controller
 @RequestMapping("/my-ads")
 @RequiredArgsConstructor
@@ -20,6 +28,10 @@ public class MyAdsController {
     private final AdService adService;
     private final UserService userService;
 
+    /**
+     * Отображает список всех объявлений текущего пользователя.
+     * Показывает все объявления пользователя не зависимо от их статуса
+     */
     @GetMapping
     public String myAds(@RequestParam(defaultValue = "0") int page,
                         @RequestParam(defaultValue = "10") int size,

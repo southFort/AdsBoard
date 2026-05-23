@@ -15,6 +15,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import jakarta.validation.Valid;
 import java.util.Set;
 
+/**
+ * Контроллер для аутентификации и регистрации пользователей.
+ * Обрабатывает запросы, связанные с входом в систему и регистрацией
+ * новых пользователей.
+ * Основные маршруты:
+ * GET /login - страница входа в систему
+ * GET /register - страница регистрации нового пользователя
+ * POST /register - обработка регистрации
+ * Валидация регистрации:
+ * - Проверка совпадения пароля и подтверждения
+ * - Проверка уникальности username
+ * - Проверка уникальности email
+ */
 @Controller
 @RequiredArgsConstructor
 public class AuthController {
@@ -23,17 +36,33 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private static final Logger logger = (Logger) LoggerFactory.getLogger(AuthController.class);
 
+    /**
+     * Отображается страницу входа в систему.
+     */
     @GetMapping("/login")
     public String login() {
         return "auth/login";
     }
 
+    /**
+     * Отображает форму регистрации нового пользователя.
+     */
     @GetMapping("/register")
     public String registerForm(Model model) {
         model.addAttribute("userDTO", new UserDTO());
         return "auth/register";
     }
 
+    /**
+     * Обрабатывает регистрацию нового пользователя
+     * Процесс:
+     * - Валидация полей
+     * - Проверка совпадения пароля и подтверждения
+     * - Уникальность имени пользователя и почты
+     * - Кодирование пароля
+     * - Создание пользователя с ролью USER
+     * - перенаправление на страницу логина с сообщением об успехе
+     */
     @PostMapping("/register")
     public String register(@Valid @ModelAttribute UserDTO userDTO,
                            BindingResult bindingResult,

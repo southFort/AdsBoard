@@ -15,14 +15,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * getRootCategories() - получить все корневые категории
- * getAllCategories() - получить все категории
- * findById(id) - найти категорию по id
- * getRootCategoriesWithCount() - получить DTO корневых категорий с кол-вом объявлений
- * getAllCategoriesDTO() - получить DTO всех категорий
- * convertToDTO(Category category) - конвертация Entity > DTO
- * convertToCountDTO(Category category) - конвертация Entity > CountDTO
- * getAdsCount(Long categoryId) - получить кол-во объявлений в категории
+ * Сервис для управления категориями объявлений.
+ * Предоставляет бизнес-логику для работы с иерархической структурой категорий,
+ * включая получение корневых и дочерних категорий, формирование DTO с количеством объявлений.
  */
 
 @Service
@@ -32,27 +27,44 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final AdRepository adRepository;
 
+    /**
+     * Получает все корневые категории
+     */
     @Transactional(readOnly = true)
     public List<Category> getRootCategories() {
         return categoryRepository.findByParentIsNull();
     }
 
+    /**
+     * Получает все категории с подгрузкой корневых и дочерних элементов
+     */
     @Transactional(readOnly = true)
     public List<Category> getAllCategories() {
         return categoryRepository.findAllWithChildren();
     }
 
+    /**
+     * Находит категорию по ID
+     */
     @Transactional(readOnly = true)
     public Category findById(Long id) {
         return categoryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Категория не найдена: " + id));
     }
 
+    /**
+     * Получает дочерние категории по родительской
+     */
     @Transactional(readOnly = true)
     public List<Category> getChildren(Long parentId) {
         return categoryRepository.findByParentId(parentId);
     }
 
+    /**
+     * Получает корневые категории с количеством объявлений в каждом.
+     * Возвращается DTO, содержащее информацию о категории и
+     * количество объявлений в нем.
+     */
     @Transactional(readOnly = true)
     public List<CategoryWithAdsCountDTO> getRootCategoriesWithCount() {
         Map<Long, Integer> adsCounts = loadAdsCountForAllCategories();
@@ -63,6 +75,11 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Получает все категории в виде DTO с рекурсивной структурой.
+     * Возвращает полное дерево категорий, где каждая категория содержит
+     * список своих дочерних категорий (также в виде DTO)
+     */
     @Transactional(readOnly = true)
     public List<CategoryDTO> getAllCategoriesDTO() {
         Map<Long, Integer> adsCounts = loadAdsCountForAllCategories();
@@ -74,6 +91,9 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Конвертирует сущность Category в CategoryDTO.
+     */
     private CategoryDTO convertToDTO(Category category, Map<Long, Integer> adsCounts) {
 
         List<Category> childrenCopy = new ArrayList<>(category.getChildren());
@@ -90,6 +110,10 @@ public class CategoryService {
                 .build();
     }
 
+    /**
+     * Конвертирует сущность Category в CategoryWithAdsCountDTO.
+     * Упрощенная версия DTO без рекурсивной структуры children
+     */
     private CategoryWithAdsCountDTO convertToCountDTO(Category category, Map<Long, Integer> adsCounts) {
 
         return CategoryWithAdsCountDTO.builder()
@@ -100,6 +124,11 @@ public class CategoryService {
                 .build();
     }
 
+    /**
+     * Загружает количество объявлений для всех категорий.
+     * Выполняет один запрос к БД и возвращается мапу, где
+     * ключ - ID категории, значение - кол-во объявлений.
+     */
     private Map<Long, Integer> loadAdsCountForAllCategories() {
         return adRepository.countAdsGroupedByCategory().stream()
                 .collect(Collectors.toMap(

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Содать объявление - AdsBoard</title>
+    <title>Редактировать объявление - AdsBoard</title>
     <link th:href="@{/css/main.css}" rel="stylesheet">
     <link th:href="@{/css/add-ad.css}" rel="stylesheet">
 </head>
@@ -12,13 +12,18 @@
 <header th:replace="~{fragments/header :: header}"></header>
 <main class="container create-ad-container">
     <div class="page-header">
-        <h2>Новое объявление</h2>
+        <h2>Редактирование объявления</h2>
     </div>
 
     <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
     <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
 
-    <form th:action="@{/ads/create}" th:object="${adDTO}" method="post" enctype="multipart/form-data">
+    <form th:action="@{/ads/edit/{id}(id=${adDTO.id})}"
+          th:object="${adDTO}"
+          method="post"
+          enctype="multipart/form-data"
+          id="editAdForm">
+
         <div class="form-section">
             <h2 class="form-section-title">
                 <span class="step-number">1</span>
@@ -49,7 +54,6 @@
                 <div class="form-group">
                     <label for="description">Описание *</label>
                     <textarea
-                            type="text"
                             id="description"
                             name="description"
                             th:field="*{description}"
@@ -73,29 +77,29 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="price">Цена</label>
+                    <label for="price">Цена *</label>
                     <input
-                            type="number"
-                            id="price"
-                            name="price"
-                            th:field="*{price}"
-                            placeholder="0.0"
-                            required
-                            min="0.1"
-                            step="0.1">
-                    <small>Укажите стоимость</small>
+                        type="number"
+                        id="price"
+                        name="price"
+                        th:field="*{price}"
+                        placeholder="0.0"
+                        required
+                        min="0.1"
+                        step="0.1">
+                    <small>Укажите цену</small>
                     <span th:if="${#fields.hasErrors('price')}"
                           th:errors="*{price}"
                           class="field-error"></span>
                 </div>
 
                 <div class="form-group">
-                    <label for="categoryId">Категория</label>
+                    <label for="categoryId">Категория *</label>
                     <select
-                            id="categoryId"
-                            name="categoryId"
-                            th:field="*{categoryId}"
-                            required
+                        id="categoryId"
+                        name="categoryId"
+                        th:field="*{categoryId}"
+                        required
                     >
                         <option value="">Выберите категорию</option>
                         <option th:each="category : ${categories}"
@@ -121,25 +125,25 @@
                 <div class="form-group">
                     <label for="regionId">Регион</label>
                     <select
-                            id="regionId"
-                            name="regionId"
-                            onchange="loadCitiesByRegion()"
+                        id="regionId"
+                        name="regionId"
+                        onchange="loadCitiesByRegion()"
                     >
                         <option value="">Выберите регион</option>
                         <option th:each="region : ${regions}"
                                 th:value="${region.id}"
-                                th:text="${region.name}">Регион
+                                th:text="region.name">Регион
                         </option>
                     </select>
                 </div>
 
                 <div class="form-group">
-                    <label for="cityId">Город</label>
+                    <label for="cityId">Город *</label>
                     <select
-                            id="cityId"
-                            name="cityId"
-                            th:field="*{cityId}"
-                            required
+                        id="cityId"
+                        name="cityId"
+                        th:field="*{cityId}"
+                        required
                     >
                         <option value="">Сначала выберите регион</option>
                     </select>
@@ -157,48 +161,142 @@
             </h2>
 
             <div class="form-group">
-                <label>Фотографии</label>
-                <small>Максимум 10 фотографий</small>
+                <label>Фотографии объявления</label>
+                <small>Максимум 10 фотографий (можно добавить новые или удалить существующие)</small>
 
-                <div class="image-upload-area" id="imageUploadArea">
-                    <div class="image-upload-icon">📷</div>
-                    <div class="image-upload-text">
-                        <strong>Претащите фото сюда</strong> или нажмите для выбора
-                    </div>
-                    <div class="image-upload-hint">
-                        Поддерживаются: JPG, PNG, GIF ( макс. 5Mb каждое)
+                <div class="existing-images-section" th:if="${existingImages != null and !#lists.isEmpty(existingImages)}">
+                    <h3 class="existing-images-title">Текущие фотографии</h3>
+                    <div class="image-preview-container" id="existingImagesContainer">
+                        <div th:each="image, iterStat : ${existingImages}"
+                             class="image-preview-item existing"
+                             th:data-images-id="${image.id}"
+                             th:data-file-path="${image.filePath}">
+                            <img th:src="@{/images/{filename} (filename=${image.fileName})}"
+                                 th:alt="${image.fileName}"
+                                 onerror="this.src='/images/placeholder.png'">
+
+                            <button type="button"
+                                    class="remove-btn"
+                                    th:onclick="'removeExistingImage(' + ${image.id} +')'">
+                                X
+                            </button>
+
+                            <span th:if="${!image.isMain}" class="main-badge">Главное</span>
+
+                            <button th:if="${!image.isMain}"
+                                    type="button"
+                                    class="set-main-btn"
+                                    th:onclick="'setExistingMainImage(' + ${image.id} + ')'">
+                                Главное
+                            </button>
+
+                            <!-- Скрытое поле для отслеживания удаленных -->
+                            <input type="hidden"
+                                   th:name="'existingImageIds'"
+                                   th:value="${image.id}"
+                                   class="existing-image-id">
+                        </div>
                     </div>
                 </div>
 
-                <input
+                <div class="new-images-section">
+                    <h3 class="existing-images-title">Добавить новые фотографии</h3>
+
+                    <div class="image-upload-area" id="imageUploadArea">
+                        <div class="image-upload-icon">📷</div>
+                        <div class="image-upload-text">
+                            <strong>Претащите фото сюда</strong> или нажмите для выбора
+                        </div>
+                        <div class="image-upload-hint">
+                            Поддерживаются: JPG, PNG, GIF ( макс. 5Mb каждое)
+                        </div>
+                    </div>
+
+                    <input
                         type="file"
                         id="images"
                         name="images"
                         multiple
                         accept="image/jpeg,image/png,image/gif"
                         onchange="handleFileSelect(event)"
-                >
+                    >
 
-                <div class="image-preview-container" id="imagePreviewContainer"></div>
+                    <div class="image-preview-container" id="newImagesPreviewComtainer"></div>
+                </div>
             </div>
         </div>
 
+        <!-- Скртые поля для управления изображениемями -->
+        <input type="hidden" id="removedImageIds" name="removedImagesIds" value="">
+        <input type="hidden" id="mainImageId" name="mainImageId" value="">
+
         <div class="form-actions">
-            <a th:href="@{/my-ads}" class="btn btn-secondary">Отмена</a>
+            <a th:href="@{/ads/{id} (id=${adDTO.id})}" class="btn btn-secondary">Отмена</a>
+            <a th:href="@{/my-ads}" class="btn btn-secondary">К моим объявлениям</a>
             <button type="submit" class="btn btn-primary" id="submitBtn">
-                Опубликовать объявление
+                Сохранить
             </button>
         </div>
     </form>
+
+    <div class="ad-info-panel">
+        <h4>Информация об объявлении</h4>
+        <ul>
+            <li><strong>ID:</strong><span th:text="${adDTO.id}">-</span> </li>
+            <li><strong>Создано:</strong><span th:text="${adCreatedAt}">-</span> </li>
+            <li><strong>Просмотров:</strong><span th:text="${adDTO.viewCount}">0</span> </li>
+            <li><strong>Статус:</strong><span th:text="adStatusName">Активно</span> </li>
+        </ul>
+    </div>
 </main>
 <footer th:replace="~{fragments/footer :: footer}"></footer>
+
 <script>
-    //===Загрузка изображений===
     let selectedFiles = [];
+    let existingImageIds = [];
+    let removedImageIds = [];
+    let currentMainImageId = null
 
     const uploadArea = document.getElementById('imageUploadArea');
     const fileInput = document.getElementById('images');
-    const previewContainer = document.getElementById('imagePreviewContainer');
+    const newImagesPreviewContainer = document.getElementById('newImagesPreviewContainer');
+    const existingImagesContainer = document.getElementById('existingImagesContainer');
+
+    document.addEventListener('DOMContentLoaded', function () {
+       loadExistingImages();
+
+       loadCurrentCity();
+    });
+
+    //===Загрузка существующих изображений===
+    function loadExistingImages() {
+        if (existingImagesContainer) {
+            const imageElements = existingImagesContainer.querySelectorAll('.image-preview-item');
+            imageElements.forEach(el => {
+               const imageId = el.getAttribute('data-image-id');
+               if (imageId) {
+                   existingImageIds.push(parseInt(imageId));
+                   if (el.querySelector('.main-badge')) {
+                       currentMainImageId =parseInt(imageId);
+                       document.getElementById('mainImageIs').value = currentMainImageId;
+                   }
+               }
+            });
+        }
+    }
+
+    //=== Загрузка текущего города ===
+    function loadCurrentCity() {
+        const citySelect = document.getElementById('cityId');
+        const regionSelect = document.getElementById('regionId');
+
+        if (citySelect && citySelect.value) {
+            const regionId = regionSelect.value;
+            if (regionId) {
+                loadCitiesByRegion();
+            }
+        }
+    }
 
     //Клик по области загрузки
     uploadArea.addEventListener('click', () => {
@@ -260,21 +358,21 @@
             previewItem.className = 'image-preview-item';
             previewItem.innerHTML = `
                 <img src="${e.target.result}" alt="Preview">
-                <button type="button" class="remove-btn" onclick="removeImage(${index})">X</button>
-                ${index === 0 ? '<span class="main-badge">Главная</span>' : '<button type="button" class="set-main-btn" onclick="setMainImage(' + index + ')">Главная</button>'}
+                <button type="button" class="remove-btn" onclick="removeNewImage(${index})">X</button>
+                ${index === 0 && existingImageIds.length === 0 ? '<span class="main-badge">Главная</span>' : '<button type="button" class="set-main-btn" onclick="setNewMainImage(' + index + ')">Главная</button>'}
             `;
-            previewContainer.appendChild(previewItem);
+            newImagesPreviewContainer.appendChild(previewItem);
         };
         reader.readAsDataURL(file);
     }
 
-    function removeImage(index) {
+    function removeNewImage(index) {
         selectedFiles.splice(index, 1);
         refreshPreviews();
         updateFileInput();
     }
 
-    function setMainImage(index) {
+    function setNewMainImage(index) {
         if (index === 0) return;
 
         const temp = selectedFiles[0];
@@ -285,8 +383,8 @@
         updateFileInput();
     }
 
-    function refreshPreviews() {
-        previewContainer.innerHTML = '';
+    function refreshNewPreviews() {
+        newImagesPreviewContainer.innerHTML = '';
         selectedFiles.forEach((file, index) => {
             addImagePreview(file);
         });
@@ -296,6 +394,38 @@
         const dataTransfer = new DataTransfer();
         selectedFiles.forEach(file => dataTransfer.items.add(file));
         fileInput.files = dataTransfer.files;
+    }
+
+    function removeExistingImage(imageId) {
+        if (confirm('Вы уверены, что хотите удалить это изображение?')) {
+            const element = document.querySelector(`.image-preview-item[data-image-id="${imageId}"]`);
+            if (element) {
+                element.remove();
+                removedImageIds.push(imageId);
+                document.getElementById('removedImageIds').value = removedImageIds.join(',');
+                //Обновляем список существующих ID
+                existingImageIds = existingImageIds.filter(id => id !== imageId);
+            }
+        }
+    }
+
+    function setExistingMainImage(imageId) {
+        const allBadges = document.querySelectorAll('.main-badge');
+        allBadges.forEach(badge => badge.remove());
+
+        const allMainButtons = document.querySelectorAll('.set-main-btn');
+        allMainButtons.forEach(btn => btn.remove());
+
+        const element = document.querySelector(`.image-preview-item[data-image-id="${imageId}"]`);
+        if (element) {
+            const badge = document.createElement('span');
+            badge.className = 'main-badge';
+            badge.textContent = 'Главное';
+            element.appendChild(badge);
+
+            currentMainImageId = imageId;
+            document.getElementById('mainImageId').value = currentMainImageId;
+        }
     }
 
     //===Загрузка городов по региону===

@@ -18,6 +18,22 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.security.Principal;
 import java.util.List;
 
+/**
+ * Контроллер для управления объявлениями.
+ * Обрабатывает HTTP-запросы, связанные с CRUD операциями над объявлениями.
+ * Основные маршруты:
+ * GET /ads - список всех активных объявлений
+ * GET /ads/{id} - детальный просмотр объявления
+ * GET /ads/create - форма создания объявления
+ * POST /ads/create - обработка создания объявления
+ * GET /ads/edit/{id} - форма редактирования объявления
+ * POST /ads/edit/{id} - обработка редактирования объявления
+ * POST /ads/delete - удаление объявления
+ * Требования к аутентификации:
+ * - Просмотр объявлений - доступен всем
+ * - Создание/редактирование/удаление - только авторизованным
+ * - Редактирование/удаление - только владельцу объявления
+ */
 @Controller
 @RequestMapping("/ads")
 @RequiredArgsConstructor
@@ -29,6 +45,10 @@ public class AdController {
     private final CityService cityService;
     private final UserService userService;
 
+    /**
+     * Отображает список всех активных объявлений.
+     * Статус активного объявления = 11
+     */
     @GetMapping
     public String listAds(@RequestParam(defaultValue = "0") int page,
                           @RequestParam(defaultValue = "10") int size,
@@ -39,6 +59,10 @@ public class AdController {
         return "ads/list";
     }
 
+    /**
+     * Отображает детальную страницу объявления.
+     * При просмотре счетчик просмотров увеличивается
+     */
     @GetMapping("/{id}")
     public String viewAd(@PathVariable Long id, Model model) {
         Ad ad = adService.findById(id);
@@ -46,6 +70,10 @@ public class AdController {
         return "ads/view";
     }
 
+    /**
+     * Отображается форму создания нового объявления
+     * Доступно только авторизованным пользователям
+     */
     @GetMapping("/create")
     public String createForm(Model model) {
         model.addAttribute("adDTO", new AdDTO());
@@ -55,14 +83,7 @@ public class AdController {
     }
 
     /**
-     * Создание объявления, отправка запроса
-     * @param adDTO
-     * @param bindingResult
-     * @param images
-     * @param userDetails
-     * @param redirectAttributes
-     * @param model
-     * @return
+     * Обработка создания нового объявления.
      */
     @PostMapping("/create")
     public String createAd(@Valid @ModelAttribute AdDTO adDTO,
@@ -112,16 +133,23 @@ public class AdController {
         }
     }
 
+    /**
+     * Отображает форму редактирования объявления.
+     * Доступно только владельцу объявления
+     */
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable Long id, Model model, Principal principal) {
         Ad ad = adService.findById(id);
-        //Проверка прав пользователя
         model.addAttribute("adDTO", convertToDTO(ad));
         model.addAttribute("categories", categoryService.getAllCategories());
         model.addAttribute("cities", cityService.getAllCities());
         return "ads/edit";
     }
 
+    /**
+     * Обрабатывает обновление объявления.
+     * Перед обновление проверяет, что текущий пользователь является владельцем.
+     */
     @PostMapping("/edit/{id}")
     public String updateAd(@PathVariable Long id,
                            @Valid @ModelAttribute AdDTO adDTO,
@@ -143,6 +171,9 @@ public class AdController {
         }
     }
 
+    /**
+     * Удаляет объявление.
+     */
     @PostMapping("/delete/{id}")
     public String deleteAd(@PathVariable Long id,
                            @AuthenticationPrincipal UserDetails userDetails,
@@ -157,6 +188,9 @@ public class AdController {
         return "redirect:/my-ads";
     }
 
+    /**
+     * Конвертируется сущность Ad в AdDTO
+     */
     private AdDTO convertToDTO(Ad ad) {
         return AdDTO.builder()
                 .id(ad.getId())

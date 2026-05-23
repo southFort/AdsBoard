@@ -3,6 +3,13 @@ package com.adsboard.dto;
 import lombok.*;
 import jakarta.validation.constraints.*;
 
+/**
+ * DTO для передачи данных о пользователе.
+ * Используется:
+ * - Регистрации новых пользователей
+ * - Редактирования профиля пользователя
+ * - Отображения информации о пользователе в представлениях
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

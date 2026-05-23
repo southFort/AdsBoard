@@ -12,15 +12,28 @@ import org.springframework.stereotype.Service;
 import java.util.stream.Collectors;
 
 /**
- * Логин пользователя. Если isEnable = NULL считаем что пользователь отключен
+ * Кастомный сервис для загрузки данных пользователя из БД при аутентификации
+ * в Spring Security
+ * Реализаует интерфейс UserDetailsService, который используется Spring Security
+ * для получения информации о пользователе по его имени
+ * Важно: Если поле isEnabled у пользователя равно null, пользователь
+ * считается отключенным (disabled)
+ * - Загружает пользователя из БД через UserService
+ * - Обрабатывает случай, кога пользователь не найден в БД
  */
-
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final UserService userService;
 
+    /**
+     * Загружает данные пользователя по его имени пользователя (username)
+     * Метод вызывает Spring Security по время аутентификации для получения
+     * информации о пользователе, включая пароль (для проверки) и роли (для авторизации)
+     *
+     * Логирование включено на время отладки
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userService.findByUsername(username)

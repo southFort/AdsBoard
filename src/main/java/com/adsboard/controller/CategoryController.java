@@ -13,8 +13,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * listCategories(Model model) - список всех категорий
- * viewCategory(...) - просмотр категории по id с объявлениями
+ * Контроллер для управления категориями объявлений.
+ * Обрабатывает запросы, связанные с просмотром категорий и их иерархии
+ * Основные маршруты
+ * GET /categories - список всех категорий с количеством объявлений
+ * GET /categories/{id} - просмотр категории с объявлениями и подкатегориями
  */
 
 @Controller
@@ -25,6 +28,9 @@ public class CategoryController {
     private final CategoryService categoryService;
     private final AdService adService;
 
+    /**
+     * Отображает список всех корневых категорий
+     */
     @GetMapping
     public String listCategories(Model model) {
         List<CategoryWithAdsCountDTO> categories = categoryService.getRootCategoriesWithCount();
@@ -33,6 +39,10 @@ public class CategoryController {
         return "categories/list";
     }
 
+    /**
+     * Отображает детальную страницу категории: список дочерних категорий и
+     * список объявлений в текущей категории
+     */
     @GetMapping("/{id}")
     public String viewCategory (@PathVariable Long id,
                                 @RequestParam(defaultValue = "0") int page,

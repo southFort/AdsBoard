@@ -6,9 +6,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * Репозиторий для работы с сущностью Region.
+ * Предоставляет базовые crud-операции для регионов.
+ */
 @Repository
 public interface RegionRepository extends JpaRepository<Region, Long> {
-    /**
-     * На момент создания админки добавить методы работы с регионами
-     */
+
 }

@@ -22,6 +22,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Сервис для управления объявлениями.
+ * Предоставляет бизнес-логику для операций с объявлениями:
+ * создание, редактирование, удаление, поиск, просмотр и управление изображениями.
+ */
 @Service
 @RequiredArgsConstructor
 public class AdService {
@@ -31,20 +36,38 @@ public class AdService {
     private final CategoryRepository categoryRepository;
     private final CityService cityService;
 
+    /**
+     * Директория для загрузки изображений объявлений.
+     * Относительный путь от корня приложения.
+     */
     private static final String UPLOAD_DIR = "uploads/ads/";
 
+    /**
+     * Все публичные (активные) объявления с пагинацией.
+     * Публичные считаются объявления со статусом id = 11 (ACTIVE).
+     * Сортировка от новых к старым.
+     * Используется на главное странице и в общих списках объявлений.
+     */
     @Transactional(readOnly = true)
     public Page<Ad> findAllPublicAds(int page, int size) {
-        return adRepository.findAllByStatusId(1L,
+        return adRepository.findAllByStatusId(11L,
                 PageRequest.of(page, size, Sort.by("createdAt").descending()));
     }
 
+    /**
+     * Получаем все объявления конкретного пользователя.
+     * Возвращает объявления во всех статусах.
+     */
     @Transactional(readOnly = true)
     public Page<Ad> findUserAds(Long userId, int page, int size) {
         return adRepository.findAllByUserId(userId,
                 PageRequest.of(page, size, Sort.by("createdAt").descending()));
     }
 
+    /**
+     * Находит объявлений по ID (с подгрузкой изображений) и
+     * увеличивает счетчики просмотров.
+     */
     @Transactional(readOnly = true)
     public Ad findById(Long id) {
         Ad ad = adRepository.findByIdWithImages(id);
@@ -55,6 +78,9 @@ public class AdService {
         return ad;
     }
 
+    /**
+     * Создает новое объявление.
+     */
     @Transactional
     public Ad createAd(AdDTO adDTO, User user, List<MultipartFile> images) throws IOException {
         Ad ad = new Ad();
@@ -76,6 +102,11 @@ public class AdService {
         return saveAd;
     }
 
+    /**
+     * Обновляет существующее объявление.
+     * Объявление может редактировать только его владелец. При попытке
+     * редактировать чужое объявление выбрасывается исключение
+     */
     @Transactional
     public Ad updateAd(Long adId, AdDTO adDTO, User user) {
         Ad ad = adRepository.findById(adId).orElseThrow();
@@ -93,6 +124,11 @@ public class AdService {
         return adRepository.save(ad);
     }
 
+    /**
+     * Удаляет объявление.
+     * Объявление может удалить только его владелец.
+     * При удалении объявления удаляются его изображения
+     */
     @Transactional
     public void deleteAd(Long adId, User user) {
         Ad ad = adRepository.findById(adId).orElseThrow();
@@ -104,26 +140,41 @@ public class AdService {
         adRepository.delete(ad);
     }
 
+    /**
+     * Выполняет поиск объявлений.
+     * Поиск только среди активных объявлений по заданным критериям.
+     */
     @Transactional(readOnly = true)
     public Page<Ad> searchAds(SearchDTO searchDTO) {
         int page = searchDTO.getPage() != null ? searchDTO.getPage() : 0;
         int size = searchDTO.getSize() != null ? searchDTO.getSize() : 10;
 
         if (searchDTO.getCategoryId() != null) {
-            return adRepository.findByStatusAndCategory(1L, searchDTO.getCategoryId(),
+            return adRepository.findByStatusAndCategory(11L, searchDTO.getCategoryId(),
                     PageRequest.of(page, size, Sort.by("createdAt").descending()));
         }
 
-        return adRepository.searchAds(1L, searchDTO.getSearchTerm(),
+        return adRepository.searchAds(11L, searchDTO.getSearchTerm(),
                 PageRequest.of(page, size, Sort.by("createdAt").descending()));
     }
 
+    /**
+     * Находит объявления по категории.
+     * Возвращает только активные объявления указанной категории.
+     */
     @Transactional(readOnly = true)
     public Page<Ad> findByCategory(Long categoryId, int page, int size) {
         return adRepository.findByStatusAndCategory(1L, categoryId,
                 PageRequest.of(page, size, Sort.by("createdAt").descending()));
     }
 
+    /**
+     * Сохраняет изображения для объявления.
+     * 1. Создает елси нет директорию
+     * 2. Для каждого изображения генерирует уникальное имя (UUID)
+     * 3. Сохраняет файл на диск
+     * 4. Создает сущность AdImage с метаданными
+     */
     private void saveAdImages(Ad ad, List<MultipartFile> files) throws IOException {
         Path uploadPath = Paths.get(UPLOAD_DIR);
         if (!Files.exists(uploadPath)) {

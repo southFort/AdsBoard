@@ -11,6 +11,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Контроллер для поиска объявлений.
+ * Основные маршруты:
+ * - GET /search - поиск объявлений
+ */
 @Controller
 @RequestMapping("/search")
 @RequiredArgsConstructor
@@ -20,6 +25,13 @@ public class SearchController {
     private final CategoryService categoryService;
     private final CityService cityService;
 
+    /**
+     * Выполняет поиск объявлений по заданным критериям.
+     * Логика:
+     * - Формирует SeatchDTO из параметров запроса
+     * - выполняет поиск через AdService
+     * - Передает в представление результаты поиска и фильтры
+     */
     @GetMapping
     public String search(@RequestParam(required = false) String q,
                          @RequestParam(required = false) Long category,

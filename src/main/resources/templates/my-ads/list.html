@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Мои объявления</title>
     <link th:href="@{/css/main.css}" rel="stylesheet">
+    <link th:href="@{/css/battons.css}" rel="stylesheet">
 </head>
 <body>
 <header th:replace="~{fragments/header :: header}"></header>
@@ -31,7 +32,10 @@
         </thead>
         <tbody>
         <tr th:each="ad : ${ads.content}">
-            <td th:text="${ad.title}">Заголовок</td>
+            <!-- <td th:text="${ad.title}">Заголовок</td> -->
+            <td><a th:href="@{/ads/{id}(id=${ad.id})}">
+                <h4 th:text="${ad.title}">Заголовок</h4>
+            </a></td>
             <td th:text="${#numbers.formatDecimal(ad.price, 0, 'COMMA', 2, 'POINT')} + ' ₽'">Цена</td>
             <td th:text="${ad.category.name}">Категория</td>
             <td th:text="${ad.status.name}">Статус</td>

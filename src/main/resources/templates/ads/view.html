@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${ad.title} + ' - AdsBoard'">Объявление</title>
+    <link th:href="@{/css/ad.css}" rel="stylesheet">
+    <link th:href="@{/css/battons.css}" rel="stylesheet">
+    <link th:href="@{/css/main.css}" rel="stylesheet">
+    <link th:href="@{/css/add-ad.css}" rel="stylesheet">
+</head>
+<body>
+<header th:replace="~{fragments/header :: header}"></header>
+<main class="container ad-view-container">
+    <nav class="breadcrumb">
+        <a th:href="@{/}">Главная</a>
+        <span>/</span>
+        <a th:href="@{/categories}">Категории</a>
+        <span>/</span>
+        <a th:href="@{/categories/{id} (id=${ad.category.id})}"
+           th:text="${ad.category.name}">Категория</a>
+        <span>/</span>
+        <span th:text="${ad.title}">Объявление</span>
+    </nav>
+
+    <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert alert-error" th:text="${error}"></div>
+
+    <div class="ad-view-header">
+        <div class="as-status-section" style="margin-bottom: 15px;">
+            <span th:if="${ad.status.code == 'ACTIVE'}" class="ad-status status-active">Активно</span>
+            <span th:if="${ad.status.code == 'CLOSED'}" class="ad-status status-closed">Закрыто</span>
+            <span th:if="${ad.status.code == 'MODERATION'}" class="ad-status status-moderation">На модерации</span>
+        </div>
+
+        <h1 class="ad-title" th:text="${ad.title}">Заголовок объявления</h1>
+
+        <div class="ad-meta">
+            <div class="ad-meta-item">
+                <span class="icon">📁</span>
+                <span th:text="${ad.category.name}">Категория</span>
+            </div>
+            <div class="ad-meta-item">
+                <span class="icon">📍</span>
+                <span th:text="${ad.city.name}">Город</span>
+            </div>
+            <div class="ad-meta-item">
+                <span class="icon">👁</span>
+                <span th:text="${ad.viewCount} + ' просмотров'">0 просмотров</span>
+            </div>
+            <div class="ad-meta-item">
+                <span class="icon">📅</span>
+                <span th:text="${#temporals.format(ad.createdAt, 'dd.MM.yyyy HH:mm')}">Дата</span>
+            </div>
+        </div>
+
+        <div class="ad-price">
+            <span th:text="${#numbers.formatDecimal(ad.price, 0, 'COMMA', 2, 'POINT')}">0.00</span>
+            <span class="currency">₽</span>
+        </div>
+
+        <!-- Кнопки действия если владелец -->
+        <div sec:authorize="isAuthenticated()" class="ad-owner-actions"
+             th:if="${#authentication.principal.username == ad.user.username}">
+            <div class="actions-grid">
+                <a th:href="@{/ads/edit/{id} (id=${ad.id})}" class="btn btn-primary">
+                    ✏️ Редактировать
+                </a>
+                <form th:action="@{ads/delete/{id} (id=${ad.id})}" method="post"
+                      style="display: inline;"
+                      onsubmit="return confirm('Вы уверены, что хотите удалить это объявление?')">
+                    <button type="submit" class="btn btn-danger btn-block">
+                        🗑️ Удалить
+                    </button>
+                </form>
+                <a th:href="@{/my-ads}" class="btn btn-secondary">
+                    📋 Мои объявления
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Галерея изображений -->
+    <div class="ad-gallery" th:if="${not #lists.isEmpty(ad.images)}">
+        <div class="gallery-main">
+            <img id="mainImage"
+                 th:src="@{/uploads/ads/{filename}(filename=${ad.images.iterator().next().fileName})}"
+                 th:alt="${ad.title}"
+                 onerror="this.src='/images/placeholder.png'">
+        </div>
+
+        <div class="gallery-thumbnails" th:if="${ad.images.size() > 1}">
+            <img th:each="image : ${ad.images}"
+                 th:src="@{/uploads/ads/{filename}(filename=${image.fileName})}"
+                 th:alt="${image.fileName}"
+                 th:classappend="${image.isMain} ? 'active'"
+                 onclick="changeMainImage(this)"
+                 onerror="this.src='/images/placeholder.png'">
+        </div>
+    </div>
+
+    <!-- Заглушка если нет изображения -->
+    <div class="ad-gallery" th:if="${#lists.isEmpty(ad.images)}">
+        <div class="gallery-placeholder">
+            📷
+        </div>
+        <p style="text-align: center; color: #7f8c8d; margin-top: 15px;">
+            Изображения не добавлены
+        </p>
+    </div>
+
+    <!-- Описание -->
+    <div class="ad-details">
+        <div class="ad-details-section">
+            <h2 class="section-title">
+                <span class="icon">📝</span>
+                Описание
+            </h2>
+            <div class="ad-description" th:text="${ad.description}">
+                Текст описания объявления
+            </div>
+        </div>
+
+        <div class="ad-details-section">
+            <h2 class="section-title">
+                <span class="icon">ℹ️</span>
+                Параметры
+            </h2>
+            <div class="ad-parameters">
+                <div class="parameter-item">
+                    <span class="parameter-label">Категория:</span>
+                    <span class="parameter-value" th:text="${ad.category.name}">-</span>
+                </div>
+                <div class="parameter-item">
+                    <span class="parameter-label">Город:</span>
+                    <span class="parameter-value" th:text="${ad.city.name}">-</span>
+                </div>
+                <div class="parameter-item">
+                    <span class="parameter-label">Регион:</span>
+                    <span class="parameter-value" th:text="${ad.city.region.name}">-</span>
+                </div>
+                <div class="parameter-item">
+                    <span class="parameter-label">Статус:</span>
+                    <span class="parameter-value" th:text="${ad.status.name}">-</span>
+                </div>
+                <div class="parameter-item">
+                    <span class="parameter-label">Дата создания:</span>
+                    <span class="parameter-value" th:text="${#temporals.format(ad.createdAt, 'dd.MM.yyyy HH:mm')}">-</span>
+                </div>
+                <div class="parameter-item">
+                    <span class="parameter-label">Просмотров:</span>
+                    <span class="parameter-value" th:text="${ad.viewCount}">-</span>
+                </div>
+                <div class="parameter-item">
+                    <span class="parameter-label">ID объявления:</span>
+                    <span class="parameter-value" th:text="${ad.id}">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Информация о продавце -->
+    <div class="seller-info">
+        <div class="seller-header">
+            <div class="seller-avatar"
+                 th:text="${#strings.toUpperCase(#strings.substring(ad.user.fullName != null ? ad.user.fullName :
+                 ad.user.username, 0, 1))}">
+                U
+            </div>
+            <div>
+                <div class="seller-name"
+                     th:text="${ad.user.fullName != null ? ad.user.fullName : ad.user.username}">
+                    Имя пользователя
+                </div>
+            </div>
+        </div>
+        <div class="seller-contacts">
+            <div class="contact-item">
+                <span class="contact-icon">📞</span>
+                <span class="contact-value" th:text="${ad.user.phone}">phone</span>
+            </div>
+            <div class="contact-item">
+                <span class="contact-icon">✉️</span>
+                <span class="contact-value" th:text="${ad.user.email}">email</span>
+            </div>
+        </div>
+    </div>
+
+</main>
+<footer th:replace="~{fragments/footer :: footer}"></footer>
+<script>
+
+</script>
+</body>
+</html>

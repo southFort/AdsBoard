@@ -51,9 +51,9 @@ public class SecurityConfig {
         http
                 //.csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
                         .requestMatchers("/", "/ads/**", "/categories/**", "/cities/**", "/search").permitAll()
                         .requestMatchers("/register", "/login").permitAll()
-                        .requestMatchers("/static/**", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/my-ads/**", "/ads/create", "/ads/edit/**", "/ads/delete/**").authenticated()
                         .anyRequest().authenticated()
                 )
